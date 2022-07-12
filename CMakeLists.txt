@@ -3,4 +3,4 @@ project(DES_Official C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(DES_Official main.c utility.c utility.h des.h des.c)
+add_executable(DES_Official main.c utility.c utility.h des.h des.c constants.h errorManagement.h errorManagement.c)

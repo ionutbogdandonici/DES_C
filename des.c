@@ -5,7 +5,9 @@
 #include <malloc.h>
 #include <string.h>
 
+#include "constants.h"
 #include "utility.h"
+#include "errorManagement.h"
 
 const char *BINARY_KEY;
 const char *PERMUTED_KEY;
@@ -15,58 +17,195 @@ char *IP_M;
 char C[28];
 char D[28];
 
-char L[32];
-char R[32];
+// One space more for the null character
+char L[33];
+char R[33];
 
-const char IP[8][8] = {
-        {58, 50, 42, 34, 26, 18, 10, 2},
-        {60, 52, 44, 36, 28, 20, 12, 4},
-        {62, 54, 46, 38, 30, 22, 14, 6},
-        {64, 56, 48, 40, 32, 24, 16, 8},
-        {57, 49, 41, 33, 25, 17, 9,  1},
-        {59, 51, 43, 35, 27, 19, 11, 3},
-        {61, 53, 45, 37, 29, 21, 13, 5},
-        {63, 55, 47, 39, 31, 23, 15, 7}
-};
+char keys[16][49];
 
-const char PC_1[8][7] = {
-        {57, 49, 41, 33, 25, 17, 9},
-        {1,  58, 50, 42, 34, 26, 18},
-        {10, 2,  59, 51, 43, 35, 27},
-        {19, 11, 3,  60, 52, 44, 36},
-        {63, 55, 47, 39, 31, 23, 15},
-        {7,  62, 54, 46, 38, 30, 22},
-        {14, 6,  61, 53, 45, 37, 29},
-        {21, 13, 5,  28, 20, 12, 4}
-};
+char *reverse_and_permute(char l[33], char r[33]) {
+    char *toPermute = strcat(r, l);
+    char *output = malloc(64);
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            output[i * 8 + j] = toPermute[IP_1[i][j] - 1];
+        }
+    }
+    return output;
+}
 
-const char PC_2[8][6] = {
-        {14, 17, 11, 24, 1,  5},
-        {3,  28, 15, 6,  21, 10},
-        {23, 19, 12, 4,  26, 8},
-        {16, 7,  27, 20, 13, 2},
-        {41, 52, 31, 37, 47, 55},
-        {30, 40, 51, 45, 33, 48},
-        {44, 49, 39, 56, 34, 53},
-        {46, 42, 50, 36, 29, 32}
-};
+char *xorBitString(char *input1, char *input2) {
+    char *output = malloc(9);
+    for (int i = 0; i < strlen(input1); ++i) {
+        int value = (input1[i] - '0') + (input2[i] - '0');
+        if (value == 2) {
+            output[i] = '0';
+        } else if (value == 1) {
+            output[i] = '1';
+        } else {
+            output[i] = '0';
+        }
+    }
+    return output;
+}
 
-const int shifts[16] = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
+char *applyFinalE(const char *input) {
+    char *output = malloc(33);
+    for (int i = 0; i < 32; i++) {
+        output[i] = input[P[i] - 1];
+    }
+    output[32] = '\0';
+    return output;
+}
 
-char keys[16][48];
+char *applyS1(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S1[row_index][col_index]);
+}
 
+char *applyS2(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S2[row_index][col_index]);
+}
+
+char *applyS3(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S3[row_index][col_index]);
+}
+
+char *applyS4(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S4[row_index][col_index]);
+}
+
+char *applyS5(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S5[row_index][col_index]);
+}
+
+char *applyS6(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S6[row_index][col_index]);
+}
+
+char *applyS7(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S7[row_index][col_index]);
+}
+
+char *applyS8(const char *input) {
+    char row[3] = {input[0], input[5], '\0'};
+    char col[5] = {input[1], input[2], input[3], input[4], '\0'};
+    int row_index = toIntFromBitString(row);
+    int col_index = toIntFromBitString(col);
+    return toBitStringFromInt(S8[row_index][col_index]);
+}
+
+
+char *applySBox(char *input) {
+    char *output = malloc(sizeof(char) * 48);
+    strcat(output, applyS1(cut(input, 0, 5)));
+    strcat(output, applyS2(cut(input, 6, 11)));
+    strcat(output, applyS3(cut(input, 12, 17)));
+    strcat(output, applyS4(cut(input, 18, 23)));
+    strcat(output, applyS5(cut(input, 24, 29)));
+    strcat(output, applyS6(cut(input, 30, 35)));
+    strcat(output, applyS7(cut(input, 36, 41)));
+    strcat(output, applyS8(cut(input, 42, 47)));
+    output[48] = '\0';
+    return output;
+}
+
+char *applyXOR(const char *input, const char *key) {
+    char *output = malloc(sizeof(char) * 48);
+    printf("XOR-I:\t\t\t\t\t %s\n", input);
+    printf("XOR-K:\t\t\t\t\t %s\n", key);
+    for (int i = 0; i <= 48; i++) {
+        int in = input[i] - '0';
+        output[i] = in ^ key[i];
+    }
+    output[48] = '\0';
+    return output;
+}
+
+char *applyE_function(const char *input) {
+    char *output = malloc(sizeof(char) * 48);
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 6; ++j) {
+            output[i * 6 + j] = input[E[i][j] - 1];
+        }
+    }
+    if (strlen(output) > 48) {
+        output[strlen(output) - 1] = '\0';
+    } else {
+        output[48] = '\0';
+    }
+    return output;
+}
 
 void fill_LR() {
     for (int i = 0; i < 32; i++) {
         L[i] = IP_M[i];
         R[i] = IP_M[i + 32];
     }
+    L[32] = '\0';
+    R[32] = '\0';
 }
 
-void encode() {
+char *encode() {
     fill_LR();
-    printf("L: %s\n", L);
-    printf("R: %s\n", R);
+    printf("L[0]:\t\t\t\t\t %s (%lu bit)\n", L, strlen(L));
+    printf("R[0]:\t\t\t\t\t %s (%lu bit)\n", R, strlen(R));
+    char L_n_1[33];
+    for (int i = 1; i <= 16; i++) {
+        strcpy(L_n_1, L);
+        L_n_1[32] = '\0';
+        strcpy(L, R);
+        char *ER = applyE_function(R);
+        char *XOR = applyXOR(ER, keys[i]);
+        printf("KEY-[%d]:\t\t\t\t %s (%lu bit)\n", i, keys[i], strlen(keys[i]));
+        printf("X[%d]:\t\t\t\t\t %s (%lu bit)\n", i, XOR, strlen(XOR));
+        char *applyedSBOX = applySBox(XOR);
+        strcpy(R, xorBitString(applyFinalE(applyedSBOX), L_n_1));
+        printf("L[%d-1]:\t\t\t\t %s \n", i, L_n_1);
+        printf("L[%d]:\t\t\t\t\t %s (%lu bit)\n", i, L, strlen(L));
+        printf("f[%d]:\t\t\t\t\t %s\n", i, applyFinalE(applyedSBOX));
+        printf("R[%d]:\t\t\t\t\t %s (%lu bit)\n", i, R, strlen(R));
+        printf("-------------------------------------------\n");
+    }
+    char *toHex = reverse_and_permute(L, R);
+    char *hexedL = cut(toHex, 0, 31);
+    char *hexedR = cut(toHex, 32, 63);
+
+
+    char *hexString = malloc(sizeof(char) * 33);
+    sprintf(hexString, "%x", bit_to_hex(hexedL));
+    char *hexString2 = malloc(sizeof(char) * 33);
+    sprintf(hexString2, "%x", bit_to_hex(hexedR));
+    strcat(hexString, hexString2);
+    hexString[32] = '\0';
+    return hexString;
 }
 
 char *start_inital_permutation(const char *input) {
@@ -80,7 +219,7 @@ char *start_inital_permutation(const char *input) {
 }
 
 void fill_subkeys(char *c, char *d, int j) {
-    char permuted_subkey[48];
+    char permuted_subkey[49];
     strcat(permuted_subkey, c);
     strcat(permuted_subkey, d);
     for (int i = 0; i < 8; i++) {
@@ -88,6 +227,7 @@ void fill_subkeys(char *c, char *d, int j) {
             keys[j][i * 6 + k] = permuted_subkey[PC_2[i][k] - 1];
         }
     }
+    permuted_subkey[48] = '\0';
     printf("Permutated subkey[%d]:\t %s (%lu bit)\n", j, keys[j], strlen(keys[j]));
 }
 
@@ -145,12 +285,13 @@ void set_key(char *key) {
     printf("\nPermuted KEY:\t\t\t %s (%lu bit)\n", PERMUTED_KEY, strlen(PERMUTED_KEY));
 }
 
-void init_des(char *input, char *key) {
-    M = to_bit_string(input);
+char *init_des(char *input, char *key) {
+    printf("Validation: %s\n", validateMessage(input));
+    M = to_bit_string(validateMessage(input));
     printf("Message in bit:\t\t\t %s\n", M);
     set_key(key);
     apply_shift_and_permute();
     IP_M = start_inital_permutation(M);
     printf("Initial Permutation: \t %s (%lu bit)\n", IP_M, strlen(IP_M));
-    encode();
+    return encode();
 }
