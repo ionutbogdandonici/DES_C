@@ -1,4 +1,1 @@
-# Data Encryption Standard
-
-Progetto sviluppato da:
-  
+# Data Encryption Standard Implementation in C
